@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OSTH CM</title>
+  <title>OSTH CM - TX/RX System</title>
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
@@ -41,12 +41,41 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       width: fit-content; 
+      min-width: 250px;
       padding: 3vh 20px; 
       height: 100%;
       max-height: 850px;
       display: flex;
       flex-direction: column;
       gap: 15px; 
+      position: relative;
+    }
+
+    /* 🔄 แถบเลือกโหมด TX / RX */
+    .mode-selector {
+      display: flex;
+      width: 100%;
+      max-width: 180px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--btn-border);
+    }
+    .btn-mode {
+      flex: 1;
+      padding: 8px 0;
+      background: transparent;
+      border: none;
+      color: var(--text-inactive);
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-mode.active {
+      background: var(--active-color);
+      color: #0d1117;
     }
 
     /* 🔒 ดีไซน์กล่องใส่รหัส PIN */
@@ -89,7 +118,39 @@
       cursor: pointer;
       transition: 0.3s;
     }
-    .btn-join:hover { transform: scale(1.05); }
+
+    /* ==================================
+       📡 ส่วนของ TX PANEL
+       ================================== */
+    #txPanel {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      flex: 1;
+    }
+
+    /* 🟢 ไฟ LED สถานะตอบรับจาก RX */
+    .led-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 10px;
+      margin-bottom: -5px;
+    }
+    .led {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #333;
+      box-shadow: inset 0 0 4px #000;
+      transition: 0.2s;
+    }
+    /* เมื่อไฟติด (RX ส่ง OK มา) */
+    .led.on {
+      background: #00ff00;
+      box-shadow: 0 0 10px #00ff00, inset 0 0 3px #fff;
+    }
+    .led-text { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 1px; }
 
     .button-stack {
       display: flex;
@@ -119,110 +180,108 @@
       background-position: center;
       background-repeat: no-repeat;
     }
-
     .btn-remote:hover { background-color: rgba(255, 255, 255, 0.15); color: #ffffff; }
 
     @keyframes blink-action {
-      0%, 49% {
-        background-color: var(--btn-bg);
-        border-color: var(--btn-border);
-        color: var(--text-inactive);
-        box-shadow: none;
-      }
-      50%, 100% {
-        background-color: rgba(0, 210, 255, 0.1);
-        border-color: var(--active-color);
-        color: var(--active-color);
-        box-shadow: var(--active-glow);
-      }
+      0%, 49% { background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--text-inactive); box-shadow: none; }
+      50%, 100% { background-color: rgba(0, 210, 255, 0.1); border-color: var(--active-color); color: var(--active-color); box-shadow: var(--active-glow); }
     }
-
     .btn-remote.active {
-      background-color: rgba(0, 210, 255, 0.1);
-      border-color: var(--active-color);
-      color: var(--active-color);
-      box-shadow: var(--active-glow);
-      transform: scale(1.05); 
-      animation: blink-action 0.2s 5; 
+      background-color: rgba(0, 210, 255, 0.1); border-color: var(--active-color); color: var(--active-color);
+      box-shadow: var(--active-glow); transform: scale(1.05); animation: blink-action 0.2s 5; 
     }
-    .btn-remote:focus { outline: none; }
 
-    /* 💬 ดีไซน์แชท */
+    .btn-remote[data-state="SPAN_PLUS"], .btn-remote[data-state="STEP_PLUS"] {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgba(255, 255, 255, 0.05)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z'/%3E%3C/svg%3E");
+      background-size: 85%; 
+    }
+    .btn-remote[data-state="SPAN_MINUS"], .btn-remote[data-state="STEP_MINUS"] {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(180, 12, 12)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z' fill='rgba(255, 255, 255, 0.05)'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 85%; 
+    }
+
+    /* แชทใน TX Panel */
     .chat-container {
-      flex: 4; 
-      display: flex;
-      flex-direction: column;
-      border-top: 1px solid var(--btn-border);
-      padding-top: 15px;
-      gap: 10px;
-      min-height: 150px; 
-      width: 100%;
-      max-width: 160px; 
-      margin: 0 auto; 
+      flex: 4; display: flex; flex-direction: column; border-top: 1px solid var(--btn-border);
+      padding-top: 15px; gap: 10px; min-height: 150px; width: 100%; max-width: 180px; margin: 0 auto; 
     }
     .chat-box {
-      flex: 1;
-      background: rgba(0, 0, 0, 0.3); 
-      border-radius: 10px;
-      padding: 8px; 
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 12px; 
-      scroll-behavior: smooth;
+      flex: 1; background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 8px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 8px; font-size: 12px; scroll-behavior: smooth;
     }
     .chat-box::-webkit-scrollbar { width: 4px; }
     .chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-    .chat-msg {
-      padding: 6px 10px;
-      border-radius: 12px;
-      max-width: 90%;
-      word-break: break-word;
-      animation: fadeIn 0.3s ease;
-    }
+    .chat-msg { padding: 6px 10px; border-radius: 12px; max-width: 90%; word-break: break-word; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     .msg-me { background: rgba(0, 210, 255, 0.2); color: var(--active-color); align-self: flex-end; border-bottom-right-radius: 3px; }
     .msg-other { background: var(--btn-bg); color: #fff; align-self: flex-start; border-bottom-left-radius: 3px; }
     .msg-system { background: transparent; color: rgba(255,255,255,0.5); align-self: center; font-size: 10px; text-align: center; }
     .chat-input-area { display: flex; gap: 5px; }
     #chatInput {
-      flex: 1;
-      width: 100%; 
-      background: var(--btn-bg);
-      border: 1px solid var(--btn-border);
-      border-radius: 8px;
-      padding: 8px; 
-      color: white;
-      font-size: 12px;
-      outline: none;
-      transition: 0.3s;
+      flex: 1; width: 100%; background: var(--btn-bg); border: 1px solid var(--btn-border);
+      border-radius: 8px; padding: 8px; color: white; font-size: 12px; outline: none; transition: 0.3s;
     }
     #chatInput:focus { border-color: var(--active-color); }
-    #chatInput::placeholder { color: rgba(255,255,255,0.4); }
     .btn-chat {
-      background: var(--active-color);
-      color: #0d1117;
-      border: none;
-      border-radius: 8px;
-      padding: 0 10px; 
-      font-size: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
+      background: var(--active-color); color: #0d1117; border: none; border-radius: 8px;
+      padding: 0 10px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.3s;
     }
-    .btn-chat:hover { transform: scale(1.05); }
 
-    /* 🔼 🔽 ลายน้ำลูกศรแบบทึบ หนา และโปร่งใส */
-    .btn-remote[data-state="SPAN_PLUS"],
-    .btn-remote[data-state="STEP_PLUS"] {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgba(255, 255, 255, 0.05)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z'/%3E%3C/svg%3E");
-      background-size: 85%; 
+    /* ==================================
+       📺 ส่วนของ RX PANEL (OLED)
+       ================================== */
+    #rxPanel {
+      display: none; /* ซ่อนไว้ก่อน จะโชว์เมื่อกดโหมด RX */
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 180px;
+      margin: 0 auto;
     }
-    .btn-remote[data-state="SPAN_MINUS"],
-    .btn-remote[data-state="STEP_MINUS"] {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(180, 12, 12)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z' fill='rgba(255, 255, 255, 0.05)'/%3E%3C/g%3E%3C/svg%3E");
-      background-size: 85%; 
+
+    .oled-screen {
+      width: 100%;
+      height: 160px;
+      background: #020202;
+      border: 3px solid #222;
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #00d2ff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 26px;
+      font-weight: 900;
+      text-transform: uppercase;
+      text-align: center;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 210, 255, 0.2);
+      text-shadow: 0 0 10px rgba(0, 210, 255, 0.8), 0 0 20px rgba(0, 210, 255, 0.4);
+      padding: 10px;
+      word-break: break-word;
+    }
+
+    .btn-ok {
+      width: 100%;
+      height: 70px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 15px;
+      font-size: 24px;
+      font-weight: 800;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-ok:active {
+      transform: scale(0.95);
+      background: #1e7e34;
+      box-shadow: 0 2px 5px rgba(40, 167, 69, 0.4);
     }
   </style>
 </head>
@@ -230,6 +289,11 @@
 
   <div class="control-panel">
     
+    <div class="mode-selector">
+      <button id="btnTx" class="btn-mode active" onclick="switchMode('TX')">TX MODE</button>
+      <button id="btnRx" class="btn-mode" onclick="switchMode('RX')">RX MODE</button>
+    </div>
+
     <div class="pin-selector">
       <span>ROOM PIN:</span>
       <div class="pin-input-group">
@@ -238,22 +302,36 @@
       </div>
     </div>
 
-    <div class="button-stack">
-      <button class="btn-remote" data-state="ZERO" onclick="broadcastState('ZERO')">ZERO</button>
-      <button class="btn-remote" data-state="SPAN_PLUS" onclick="broadcastState('SPAN_PLUS')">SPAN+</button>
-      <button class="btn-remote" data-state="SPAN_MINUS" onclick="broadcastState('SPAN_MINUS')">SPAN-</button>
-      <button class="btn-remote" data-state="STEP_PLUS" onclick="broadcastState('STEP_PLUS')">STEP+</button>
-      <button class="btn-remote" data-state="STEP_MINUS" onclick="broadcastState('STEP_MINUS')">STEP-</button>
-      <button class="btn-remote" data-state="END" onclick="broadcastState('END')">END</button>
-    </div>
+    <div id="txPanel">
+      
+      <div class="led-status">
+        <div id="ackLed" class="led"></div>
+        <span class="led-text">RX OK</span>
+      </div>
 
-    <div class="chat-container">
-      <div id="chatBox" class="chat-box"></div>
-      <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ..." autocomplete="off">
-        <button onclick="sendChat()" class="btn-chat">ส่ง</button>
+      <div class="button-stack">
+        <button class="btn-remote" data-state="ZERO" onclick="broadcastState('ZERO')">ZERO</button>
+        <button class="btn-remote" data-state="SPAN_PLUS" onclick="broadcastState('SPAN_PLUS')">SPAN+</button>
+        <button class="btn-remote" data-state="SPAN_MINUS" onclick="broadcastState('SPAN_MINUS')">SPAN-</button>
+        <button class="btn-remote" data-state="STEP_PLUS" onclick="broadcastState('STEP_PLUS')">STEP+</button>
+        <button class="btn-remote" data-state="STEP_MINUS" onclick="broadcastState('STEP_MINUS')">STEP-</button>
+        <button class="btn-remote" data-state="END" onclick="broadcastState('END')">END</button>
+      </div>
+
+      <div class="chat-container">
+        <div id="chatBox" class="chat-box"></div>
+        <div class="chat-input-area">
+          <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ..." autocomplete="off">
+          <button onclick="sendChat()" class="btn-chat">ส่ง</button>
+        </div>
       </div>
     </div>
+
+    <div id="rxPanel">
+      <div id="oledScreen" class="oled-screen">IDLE</div>
+      <button class="btn-ok" onclick="sendAck()">OK</button>
+    </div>
+
   </div>
 
   <script>
@@ -264,30 +342,40 @@
     
     let activeChannel = null; 
     let currentState = 'IDLE';
+    let currentMode = 'TX'; // เริ่มต้นที่หน้า TX
     let audioCtx; 
 
     const chatSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3');
 
-    let isAudioUnlocked = false;
+    // 🔄 สลับโหมดหน้าจอ
+    function switchMode(mode) {
+      currentMode = mode;
+      
+      // สลับสีปุ่มบนสุด
+      document.getElementById('btnTx').classList.toggle('active', mode === 'TX');
+      document.getElementById('btnRx').classList.toggle('active', mode === 'RX');
+      
+      // สลับการแสดงผลหน้าจอ
+      document.getElementById('txPanel').style.display = mode === 'TX' ? 'flex' : 'none';
+      document.getElementById('rxPanel').style.display = mode === 'RX' ? 'flex' : 'none';
+    }
 
+    // 🍎 ระบบปลดล็อกเสียง iOS
+    let isAudioUnlocked = false;
     function unlockAudioForiOS() {
       if (isAudioUnlocked) return;
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
-
       chatSound.muted = true;
       chatSound.play().then(() => {
         chatSound.pause();
         chatSound.currentTime = 0;
         chatSound.muted = false; 
         isAudioUnlocked = true;
-        console.log('✅ ปลดล็อกเสียงบน iOS สำเร็จ!');
       }).catch(err => console.log('รอการปลดล็อกเสียง...'));
-
       document.removeEventListener('touchstart', unlockAudioForiOS);
       document.removeEventListener('click', unlockAudioForiOS);
     }
-
     document.addEventListener('touchstart', unlockAudioForiOS);
     document.addEventListener('click', unlockAudioForiOS);
 
@@ -314,6 +402,7 @@
       chatSound.play().catch(e => console.log('รอแตะหน้าจอเพื่อเล่นเสียงแชท'));
     }
 
+    // 🔒 ระบบ Join ห้อง
     async function joinChannel(pin) {
       if (!pin || pin.length !== 4 || isNaN(pin)) {
         alert("กรุณากรอกรหัส PIN เป็นตัวเลข 4 หลักให้ครบถ้วนครับ");
@@ -327,11 +416,29 @@
 
       activeChannel
         .on('broadcast', { event: 'state_change' }, (payload) => {
-          updateUI(payload.payload.state);
+          const state = payload.payload.state;
+          
+          // ถ้าอยู่หน้า RX ให้โชว์ชื่อปุ่มบน OLED และเล่นเสียง
+          if (currentMode === 'RX') {
+            document.getElementById('oledScreen').innerText = state;
+            if (state !== 'IDLE') playOneSecondBuzzer();
+          } 
+          // ถ้าอยู่หน้า TX ให้ปุ่มกระพริบและเล่นเสียง
+          else {
+            updateUI(state);
+          }
         })
         .on('broadcast', { event: 'chat_message' }, (payload) => {
           appendMessage(payload.payload.text, 'other');
           playChatSound(); 
+        })
+        .on('broadcast', { event: 'ack_received' }, (payload) => {
+          // 🟢 ถ้ารับสัญญาณ OK ตอบกลับมา และเราเปิดหน้า TX อยู่ ให้ไฟเขียวติด 1.5 วินาที
+          if (currentMode === 'TX') {
+            const led = document.getElementById('ackLed');
+            led.classList.add('on');
+            setTimeout(() => { led.classList.remove('on'); }, 1500);
+          }
         })
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
@@ -341,6 +448,7 @@
 
       updateUI('IDLE', false);
       document.getElementById('chatBox').innerHTML = ''; 
+      document.getElementById('oledScreen').innerText = 'IDLE';
       appendMessage(`-- เข้าร่วมห้องรหัส: ${pin} --`, 'system');
     }
 
@@ -349,6 +457,7 @@
       joinChannel(pin);
     }
 
+    // 📡 TX: ผู้ส่งส่งสัญญาณ
     function broadcastState(state) {
       updateUI(state); 
       activeChannel.send({
@@ -356,6 +465,29 @@
         event: 'state_change',
         payload: { state: state }
       });
+    }
+
+    // ✅ RX: ผู้รับกดปุ่ม OK
+    function sendAck() {
+      if (!activeChannel) return;
+      
+      // ส่งสัญญาณ ACK กลับไป
+      activeChannel.send({
+        type: 'broadcast',
+        event: 'ack_received',
+        payload: {}
+      });
+
+      // เอฟเฟกต์หน้าจอ RX ตอนกด
+      const oled = document.getElementById('oledScreen');
+      const oldText = oled.innerText;
+      oled.style.color = '#00ff00'; // เปลี่ยนเป็นสีเขียวชั่วคราว
+      oled.innerText = 'OK SENT';
+      
+      setTimeout(() => { 
+        oled.style.color = '#00d2ff'; 
+        oled.innerText = oldText; 
+      }, 1000);
     }
 
     function updateUI(state, playSound = true) {
