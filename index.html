@@ -192,11 +192,12 @@
       box-shadow: var(--active-glow); transform: scale(1.05); animation: blink-action 0.2s 5; 
     }
 
-    .btn-remote[data-state="SPAN_PLUS"], .btn-remote[data-state="STEP_PLUS"] {
+    /* 💡 อัปเดตการจับคู่สถานะปุ่มใหม่ให้ตรงกับข้อความที่แก้ไข */
+    .btn-remote[data-state="SPAN+"], .btn-remote[data-state="STEP UP"] {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgba(255, 255, 255, 0.05)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z'/%3E%3C/svg%3E");
       background-size: auto 80%; 
     }
-    .btn-remote[data-state="SPAN_MINUS"], .btn-remote[data-state="STEP_MINUS"] {
+    .btn-remote[data-state="SPAN-"], .btn-remote[data-state="STEP DOWN"] {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(180, 12, 12)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z' fill='rgba(255, 255, 255, 0.05)'/%3E%3C/g%3E%3C/svg%3E");
       background-size: auto 80%; 
     }
@@ -318,10 +319,10 @@
 
       <div class="button-stack">
         <button class="btn-remote" data-state="ZERO" onclick="broadcastState('ZERO')">ZERO</button>
-        <button class="btn-remote" data-state="SPAN_PLUS" onclick="broadcastState('SPAN_PLUS')">SPAN+</button>
-        <button class="btn-remote" data-state="SPAN_MINUS" onclick="broadcastState('SPAN_MINUS')">SPAN-</button>
-        <button class="btn-remote" data-state="STEP_PLUS" onclick="broadcastState('STEP_PLUS')">STEP+</button>
-        <button class="btn-remote" data-state="STEP_MINUS" onclick="broadcastState('STEP_MINUS')">STEP-</button>
+        <button class="btn-remote" data-state="SPAN+" onclick="broadcastState('SPAN+')">SPAN+</button>
+        <button class="btn-remote" data-state="SPAN-" onclick="broadcastState('SPAN-')">SPAN-</button>
+        <button class="btn-remote" data-state="STEP UP" onclick="broadcastState('STEP UP')">STEP UP</button>
+        <button class="btn-remote" data-state="STEP DOWN" onclick="broadcastState('STEP DOWN')">STEP DOWN</button>
         <button class="btn-remote" data-state="END" onclick="broadcastState('END')">END</button>
       </div>
 
@@ -335,7 +336,7 @@
     </div>
 
     <div id="rxPanel">
-      <div id="oledScreen" class="oled-screen">IDLE</div>
+      <div id="oledScreen" class="oled-screen">Waiting...</div>
       <button id="btnOk" class="btn-ok" onclick="sendAck()">OK</button>
     </div>
 
@@ -436,7 +437,8 @@
           document.getElementById('btnOk').classList.remove('ack-active');
 
           if (currentMode === 'RX') {
-            document.getElementById('oledScreen').innerText = state;
+            // 💡 ถ้า state เป็น IDLE ให้แสดง Waiting... ถ้าเป็นคำสั่งอื่นให้แสดงคำสั่งนั้นเลย
+            document.getElementById('oledScreen').innerText = state === 'IDLE' ? 'Waiting...' : state;
             if (state !== 'IDLE') playOneSecondBuzzer();
           } 
           else {
@@ -461,7 +463,8 @@
 
       updateUI('IDLE', false);
       document.getElementById('chatBox').innerHTML = ''; 
-      document.getElementById('oledScreen').innerText = 'IDLE';
+      // 💡 เมื่อเข้าห้องใหม่ให้เคลียร์หน้าจอเป็น Waiting... เสมอ
+      document.getElementById('oledScreen').innerText = 'Waiting...';
       document.getElementById('ackLed').classList.remove('on');
       document.getElementById('btnOk').classList.remove('ack-active');
       appendMessage(`-- เข้าร่วมห้องรหัส: ${pin} --`, 'system');
@@ -483,30 +486,22 @@
       });
     }
 
-    // ==========================================
-    // 💡 อัปเดตฟังก์ชัน sendAck ให้ส่งข้อความแชทด้วย
-    // ==========================================
     function sendAck() {
       if (!activeChannel) return;
       
-      // 1. ส่งสัญญาณ ACK (สั่งเปิดไฟ LED และเสียง Buzzer)
       activeChannel.send({
         type: 'broadcast',
         event: 'ack_received',
         payload: {}
       });
       
-      // 2. ส่งข้อความแชทไปให้ฝั่ง TX อัตโนมัติ
       activeChannel.send({
         type: 'broadcast',
         event: 'chat_message',
         payload: { text: "OK" }
       });
 
-      // 3. แสดงข้อความแชทในประวัติฝั่งตัวเอง (เผื่อสลับกลับไปดู)
       appendMessage("OK", 'me');
-
-      // 4. เปลี่ยนสีปุ่มเป็นสีเขียวค้าง
       document.getElementById('btnOk').classList.add('ack-active');
     }
 
