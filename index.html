@@ -233,9 +233,9 @@
     #rxPanel {
       display: none; 
       flex-direction: column;
-      gap: 15px; /* ลดช่องว่างลงนิดนึง */
+      gap: 15px; 
       flex: 1;
-      justify-content: flex-start; /* 💡 ดันเนื้อหาไปชิดด้านบน */
+      justify-content: flex-start; 
       align-items: center;
       width: 100%;
       max-width: 180px;
@@ -264,7 +264,6 @@
       word-break: break-word;
     }
 
-    /* 💡 ปรับปุ่ม OK ให้เหมือนปุ่มรีโมทปกติ */
     .btn-ok {
       width: 140px;      
       max-width: 60vw;   
@@ -285,7 +284,6 @@
     }
     .btn-ok:hover { background-color: rgba(255, 255, 255, 0.15); color: #ffffff; }
     
-    /* 🟢 สถานะปุ่ม OK ตอนเปิดไฟเขียวค้าง */
     .btn-ok.ack-active {
       background-color: rgba(0, 255, 0, 0.1);
       border-color: #00ff00;
@@ -382,6 +380,7 @@
     document.addEventListener('touchstart', unlockAudioForiOS);
     document.addEventListener('click', unlockAudioForiOS);
 
+    // 🔊 เสียง Buzzer ปกติ (สำหรับคำสั่ง)
     function playOneSecondBuzzer() {
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -398,6 +397,24 @@
       } catch (e) {
         console.log('รอเปิดเสียง Buzzer');
       }
+    }
+
+    // 🔊 เสียง Buzzer ตอบรับสั้นๆ (เมื่อฝั่ง RX กด OK)
+    function playAckBuzzer() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'square'; 
+        // 💡 ปรับให้เสียงแหลมขึ้นและสั้นลง เพื่อให้แยกแยะได้ง่ายว่านี่คือเสียง "รับทราบ"
+        oscillator.frequency.setValueAtTime(1500, audioCtx.currentTime); 
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.3); // ดังแค่ 0.3 วินาที
+      } catch (e) { }
     }
 
     function playChatSound() {
@@ -420,7 +437,6 @@
         .on('broadcast', { event: 'state_change' }, (payload) => {
           const state = payload.payload.state;
           
-          // 💡 เมื่อมีการสั่งงานคำสั่งใหม่ ให้ดับไฟเขียวทั้งสองฝั่งทิ้งเสมอ
           document.getElementById('ackLed').classList.remove('on');
           document.getElementById('btnOk').classList.remove('ack-active');
 
@@ -437,9 +453,10 @@
           playChatSound(); 
         })
         .on('broadcast', { event: 'ack_received' }, (payload) => {
-          // 💡 เปิดไฟ LED สีเขียวค้างไว้ (จนกว่าจะมีการกดปุ่มส่งคำสั่งใหม่)
           if (currentMode === 'TX') {
+            // 💡 เปิดไฟ LED และ เล่นเสียงตอบรับ เมื่อ RX กด OK
             document.getElementById('ackLed').classList.add('on');
+            playAckBuzzer(); 
           }
         })
         .subscribe((status) => {
@@ -462,7 +479,6 @@
     }
 
     function broadcastState(state) {
-      // 💡 เมื่อกดส่งคำสั่งใหม่ ดับไฟ LED ฝั่ง TX ทันที
       document.getElementById('ackLed').classList.remove('on');
 
       updateUI(state); 
@@ -480,7 +496,6 @@
         event: 'ack_received',
         payload: {}
       });
-      // 💡 เปิดไฟเขียวค้างที่ปุ่ม OK ฝั่ง RX
       document.getElementById('btnOk').classList.add('ack-active');
     }
 
