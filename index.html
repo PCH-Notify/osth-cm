@@ -56,7 +56,7 @@
       display: flex;
       width: 100%;
       max-width: 180px;
-      margin: 0 auto 5px auto; /* ขยับให้ห่างจากกล่อง PIN นิดนึง */
+      margin: 0 auto 5px auto; 
       background: rgba(0, 0, 0, 0.4);
       border-radius: 10px;
       overflow: hidden;
@@ -158,19 +158,19 @@
       justify-content: space-evenly; 
       flex: 6; 
       width: 100%;
-      gap: 10px; /* เพิ่มช่องว่างระหว่างปุ่มนิดหน่อย */
+      gap: 10px; 
     }
 
-    /* 💡 ปรับขนาดปุ่มให้เป็นสี่เหลี่ยมผืนผ้า (ยาวขึ้น เตี้ยลง) */
+    /* 💡 ปรับความสูงของปุ่มให้เตี้ยลงอีก */
     .btn-remote {
-      width: 140px;      /* เพิ่มความกว้าง */
+      width: 140px;      
       max-width: 60vw;   
-      height: 65px;      /* ลดความสูงลง */
+      height: 50px;      /* ลดความสูงลงเหลือ 50px */
       background-color: var(--btn-bg);
       border: 1px solid var(--btn-border);
       border-radius: 12px;
       color: var(--text-inactive);
-      font-size: 22px;   /* ปรับขนาดอักษรให้พอดีกับปุ่ม */
+      font-size: 18px;   /* ลดขนาดอักษรลงนิดหน่อยให้สมดุลกับความสูง */
       font-weight: 800; 
       text-transform: uppercase;
       cursor: pointer;
@@ -193,7 +193,7 @@
       box-shadow: var(--active-glow); transform: scale(1.05); animation: blink-action 0.2s 5; 
     }
 
-    /* 💡 ปรับสัดส่วนลายน้ำลูกศรไม่ให้ยืดตามความกว้างของปุ่ม (auto 80%) */
+    /* ลายน้ำลูกศร */
     .btn-remote[data-state="SPAN_PLUS"], .btn-remote[data-state="STEP_PLUS"] {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgba(255, 255, 255, 0.05)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z'/%3E%3C/svg%3E");
       background-size: auto 80%; 
