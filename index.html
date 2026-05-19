@@ -223,11 +223,10 @@
       padding-top: 10px;
     }
 
-    /* 💡 ปรับจอ OLED ให้เตี้ยลงและพอดีกับข้อความ */
     .oled-screen {
       width: 100%;
       height: auto;
-      min-height: 60px; /* ลดความสูงลง */
+      min-height: 60px; 
       background: #020202;
       border: 3px solid #222;
       border-radius: 12px;
@@ -279,7 +278,7 @@
        💬 ส่วนของแชท (ย้ายมาใช้ร่วมกันทั้ง TX/RX)
        ================================== */
     .chat-container {
-      flex: 1; /* ดันแชทให้ขยายเต็มพื้นที่ที่เหลือด้านล่างสุด */
+      flex: 1; 
       display: flex; 
       flex-direction: column; 
       border-top: 1px solid var(--btn-border);
@@ -375,31 +374,46 @@
 
     const chatSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3');
 
+    // ==========================================
+    // 🍎 ระบบปลดล็อกเสียง iOS แบบดุดัน (Aggressive Unlock)
+    // ==========================================
+    let isAudioUnlocked = false;
+    function unlockAudioForiOS() {
+      if (isAudioUnlocked) return;
+      
+      // 1. ปลดล็อก Web Audio API (Buzzer)
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      // 2. ปลดล็อก HTML5 Audio (Chat Sound)
+      chatSound.play().then(() => {
+        chatSound.pause();
+        chatSound.currentTime = 0;
+        isAudioUnlocked = true;
+        console.log('✅ ปลดล็อกเสียงบน iOS สำเร็จ!');
+        
+        document.removeEventListener('touchstart', unlockAudioForiOS);
+        document.removeEventListener('click', unlockAudioForiOS);
+      }).catch(err => {
+        console.log('รอการแตะหน้าจอเพื่อปลดล็อกเสียง...');
+      });
+    }
+
+    // ดักการแตะหน้าจอทุกรูปแบบ
+    document.addEventListener('touchstart', unlockAudioForiOS);
+    document.addEventListener('click', unlockAudioForiOS);
+
     function switchMode(mode) {
+      unlockAudioForiOS(); // 💡 แอบปลดล็อกตอนผู้ใช้กดสลับโหมด
+      
       currentMode = mode;
       document.getElementById('btnTx').classList.toggle('active', mode === 'TX');
       document.getElementById('btnRx').classList.toggle('active', mode === 'RX');
       document.getElementById('txPanel').style.display = mode === 'TX' ? 'flex' : 'none';
       document.getElementById('rxPanel').style.display = mode === 'RX' ? 'flex' : 'none';
     }
-
-    let isAudioUnlocked = false;
-    function unlockAudioForiOS() {
-      if (isAudioUnlocked) return;
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      chatSound.muted = true;
-      chatSound.play().then(() => {
-        chatSound.pause();
-        chatSound.currentTime = 0;
-        chatSound.muted = false; 
-        isAudioUnlocked = true;
-      }).catch(err => console.log('รอการปลดล็อกเสียง...'));
-      document.removeEventListener('touchstart', unlockAudioForiOS);
-      document.removeEventListener('click', unlockAudioForiOS);
-    }
-    document.addEventListener('touchstart', unlockAudioForiOS);
-    document.addEventListener('click', unlockAudioForiOS);
 
     function playOneSecondBuzzer() {
       try {
@@ -439,6 +453,8 @@
     }
 
     async function joinChannel(pin) {
+      unlockAudioForiOS(); // 💡 แอบปลดล็อกตอนผู้ใช้กด JOIN
+
       if (!pin || pin.length !== 4 || isNaN(pin)) {
         alert("กรุณากรอกรหัส PIN เป็นตัวเลข 4 หลักให้ครบถ้วนครับ");
         return;
@@ -494,6 +510,8 @@
     }
 
     function broadcastState(state) {
+      unlockAudioForiOS(); // 💡 แอบปลดล็อกตอนผู้ใช้กดสั่งงาน
+      
       document.getElementById('ackLed').classList.remove('on');
 
       updateUI(state); 
@@ -505,6 +523,8 @@
     }
 
     function sendAck() {
+      unlockAudioForiOS(); // 💡 แอบปลดล็อกตอนกด OK
+      
       if (!activeChannel) return;
       
       activeChannel.send({
@@ -542,6 +562,8 @@
     }
 
     function sendChat() {
+      unlockAudioForiOS(); 
+
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
       if (!text) return; 
