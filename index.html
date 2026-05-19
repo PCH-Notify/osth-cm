@@ -380,7 +380,6 @@
     document.addEventListener('touchstart', unlockAudioForiOS);
     document.addEventListener('click', unlockAudioForiOS);
 
-    // 🔊 เสียง Buzzer ปกติ (สำหรับคำสั่ง)
     function playOneSecondBuzzer() {
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -394,12 +393,9 @@
         gainNode.connect(audioCtx.destination);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 1.0); 
-      } catch (e) {
-        console.log('รอเปิดเสียง Buzzer');
-      }
+      } catch (e) { }
     }
 
-    // 🔊 เสียง Buzzer ตอบรับสั้นๆ (เมื่อฝั่ง RX กด OK)
     function playAckBuzzer() {
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -407,13 +403,12 @@
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         oscillator.type = 'square'; 
-        // 💡 ปรับให้เสียงแหลมขึ้นและสั้นลง เพื่อให้แยกแยะได้ง่ายว่านี่คือเสียง "รับทราบ"
         oscillator.frequency.setValueAtTime(1500, audioCtx.currentTime); 
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.3); // ดังแค่ 0.3 วินาที
+        oscillator.stop(audioCtx.currentTime + 0.3); 
       } catch (e) { }
     }
 
@@ -454,7 +449,6 @@
         })
         .on('broadcast', { event: 'ack_received' }, (payload) => {
           if (currentMode === 'TX') {
-            // 💡 เปิดไฟ LED และ เล่นเสียงตอบรับ เมื่อ RX กด OK
             document.getElementById('ackLed').classList.add('on');
             playAckBuzzer(); 
           }
@@ -489,13 +483,30 @@
       });
     }
 
+    // ==========================================
+    // 💡 อัปเดตฟังก์ชัน sendAck ให้ส่งข้อความแชทด้วย
+    // ==========================================
     function sendAck() {
       if (!activeChannel) return;
+      
+      // 1. ส่งสัญญาณ ACK (สั่งเปิดไฟ LED และเสียง Buzzer)
       activeChannel.send({
         type: 'broadcast',
         event: 'ack_received',
         payload: {}
       });
+      
+      // 2. ส่งข้อความแชทไปให้ฝั่ง TX อัตโนมัติ
+      activeChannel.send({
+        type: 'broadcast',
+        event: 'chat_message',
+        payload: { text: "OK" }
+      });
+
+      // 3. แสดงข้อความแชทในประวัติฝั่งตัวเอง (เผื่อสลับกลับไปดู)
+      appendMessage("OK", 'me');
+
+      // 4. เปลี่ยนสีปุ่มเป็นสีเขียวค้าง
       document.getElementById('btnOk').classList.add('ack-active');
     }
 
