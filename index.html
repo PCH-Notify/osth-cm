@@ -184,4 +184,422 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      -webkit
+      -webkit-tap-highlight-color: transparent;
+      background-position: center;
+      background-repeat: no-repeat;
+      flex-shrink: 0; 
+    }
+    .btn-remote:hover { background-color: rgba(255, 255, 255, 0.15); color: #ffffff; }
+
+    @keyframes blink-action {
+      0%, 49% { background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--text-inactive); box-shadow: none; }
+      50%, 100% { background-color: rgba(0, 210, 255, 0.1); border-color: var(--active-color); color: var(--active-color); box-shadow: var(--active-glow); }
+    }
+    .btn-remote.active {
+      background-color: rgba(0, 210, 255, 0.1); border-color: var(--active-color); color: var(--active-color);
+      box-shadow: var(--active-glow); transform: scale(1.05); animation: blink-action 0.2s 5; 
+    }
+
+    .btn-remote[data-state="SPAN+"], .btn-remote[data-state="STEP UP"] {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgba(255, 255, 255, 0.05)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z'/%3E%3C/svg%3E");
+      background-size: auto 80%; 
+    }
+    .btn-remote[data-state="SPAN-"], .btn-remote[data-state="STEP DOWN"] {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(180, 12, 12)'%3E%3Cpath d='M12 2L2 12h6v10h8V12h6L12 2z' fill='rgba(255, 255, 255, 0.05)'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: auto 80%; 
+    }
+
+    /* ==================================
+       📺 ส่วนของ RX PANEL (OLED)
+       ================================== */
+    #rxPanel {
+      display: none; 
+      flex-direction: column;
+      gap: 15px; 
+      justify-content: flex-start; 
+      align-items: center;
+      width: 100%;
+      max-width: 180px;
+      margin: 0 auto;
+      padding-top: 10px;
+    }
+
+    .oled-screen {
+      width: 100%;
+      height: auto;
+      min-height: 60px; 
+      background: #020202;
+      border: 3px solid #222;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #00d2ff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      text-align: center;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 210, 255, 0.2);
+      text-shadow: 0 0 10px rgba(0, 210, 255, 0.8), 0 0 20px rgba(0, 210, 255, 0.4);
+      padding: 15px 10px;
+      word-break: break-word;
+      flex-shrink: 0;
+    }
+
+    .btn-ok {
+      width: 140px;      
+      max-width: 60vw;   
+      height: 50px;      
+      background-color: var(--btn-bg);
+      border: 1px solid var(--btn-border);
+      border-radius: 12px;
+      color: var(--text-inactive);
+      font-size: 18px;   
+      font-weight: 800; 
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .btn-ok:hover { background-color: rgba(255, 255, 255, 0.15); color: #ffffff; }
+    
+    .btn-ok.ack-active {
+      background-color: rgba(0, 255, 0, 0.1);
+      border-color: #00ff00;
+      color: #00ff00;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    }
+
+    /* ==================================
+       💬 ส่วนของแชท (ย้ายมาใช้ร่วมกันทั้ง TX/RX)
+       ================================== */
+    .chat-container {
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      border-top: 1px solid var(--btn-border);
+      padding-top: 15px; 
+      gap: 10px; 
+      min-height: 120px; 
+      width: 100%; 
+      max-width: 180px; 
+      margin: 0 auto; 
+    }
+    .chat-box {
+      flex: 1; background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 8px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 8px; font-size: 12px; scroll-behavior: smooth;
+    }
+    .chat-box::-webkit-scrollbar { width: 4px; }
+    .chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    .chat-msg { padding: 6px 10px; border-radius: 12px; max-width: 90%; word-break: break-word; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-me { background: rgba(0, 210, 255, 0.2); color: var(--active-color); align-self: flex-end; border-bottom-right-radius: 3px; }
+    .msg-other { background: var(--btn-bg); color: #fff; align-self: flex-start; border-bottom-left-radius: 3px; }
+    .msg-system { background: transparent; color: rgba(255,255,255,0.5); align-self: center; font-size: 10px; text-align: center; }
+    .chat-input-area { display: flex; gap: 5px; flex-shrink: 0; }
+    #chatInput {
+      flex: 1; width: 100%; background: var(--btn-bg); border: 1px solid var(--btn-border);
+      border-radius: 8px; padding: 8px; color: white; font-size: 12px; outline: none; transition: 0.3s;
+    }
+    #chatInput:focus { border-color: var(--active-color); }
+    .btn-chat {
+      background: var(--active-color); color: #0d1117; border: none; border-radius: 8px;
+      padding: 0 10px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="control-panel">
+    
+    <div class="mode-selector">
+      <button id="btnTx" class="btn-mode active" onclick="switchMode('TX')">TX MODE</button>
+      <button id="btnRx" class="btn-mode" onclick="switchMode('RX')">RX MODE</button>
+    </div>
+
+    <div class="pin-selector">
+      <span>ROOM PIN:</span>
+      <div class="pin-input-group">
+        <input type="text" id="roomPin" maxlength="4" placeholder="0000" autocomplete="off" inputmode="numeric">
+        <button onclick="changeRoom()" class="btn-join">JOIN</button>
+      </div>
+    </div>
+
+    <div id="txPanel">
+      
+      <div class="led-status">
+        <div id="ackLed" class="led"></div>
+        <span class="led-text">RX OK</span>
+      </div>
+
+      <div class="button-stack">
+        <button class="btn-remote" data-state="ZERO" onclick="broadcastState('ZERO')">ZERO</button>
+        <button class="btn-remote" data-state="SPAN+" onclick="broadcastState('SPAN+')">SPAN+</button>
+        <button class="btn-remote" data-state="SPAN-" onclick="broadcastState('SPAN-')">SPAN-</button>
+        <button class="btn-remote" data-state="STEP UP" onclick="broadcastState('STEP UP')">STEP UP</button>
+        <button class="btn-remote" data-state="STEP DOWN" onclick="broadcastState('STEP DOWN')">STEP DOWN</button>
+        <button class="btn-remote" data-state="END" onclick="broadcastState('END')">END</button>
+      </div>
+    </div>
+
+    <div id="rxPanel">
+      <div id="oledScreen" class="oled-screen">Waiting...</div>
+      <button id="btnOk" class="btn-ok" onclick="sendAck()">OK</button>
+    </div>
+
+    <div class="chat-container">
+      <div id="chatBox" class="chat-box"></div>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ..." autocomplete="off">
+        <button onclick="sendChat()" class="btn-chat">ส่ง</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://lbglfepdwucjsxzbfkhn.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiZ2xmZXBkd3VjanN4emJma2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MDY4MzYsImV4cCI6MjA5MzA4MjgzNn0.a4vvqUYtxeoEM9cvSwnuSAO8XzPeZCuz2G-9d86Oyl4';
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let activeChannel = null; 
+    let currentState = 'IDLE';
+    let currentMode = 'TX'; 
+    let audioCtx; 
+
+    const chatSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3');
+
+    // ==========================================
+    // 🍎 ระบบปลดล็อกเสียง iOS แบบดุดัน (Aggressive Unlock)
+    // ==========================================
+    let isAudioUnlocked = false;
+    function unlockAudioForiOS() {
+      if (isAudioUnlocked) return;
+      
+      // 1. ปลดล็อก Web Audio API (Buzzer)
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      // 2. ปลดล็อก HTML5 Audio (Chat Sound)
+      chatSound.play().then(() => {
+        chatSound.pause();
+        chatSound.currentTime = 0;
+        isAudioUnlocked = true;
+        console.log('✅ ปลดล็อกเสียงบน iOS สำเร็จ!');
+        
+        document.removeEventListener('touchstart', unlockAudioForiOS);
+        document.removeEventListener('click', unlockAudioForiOS);
+      }).catch(err => {
+        console.log('รอการแตะหน้าจอเพื่อปลดล็อกเสียง...');
+      });
+    }
+
+    // ดักการแตะหน้าจอทุกรูปแบบ
+    document.addEventListener('touchstart', unlockAudioForiOS);
+    document.addEventListener('click', unlockAudioForiOS);
+
+    function switchMode(mode) {
+      unlockAudioForiOS(); 
+      
+      currentMode = mode;
+      document.getElementById('btnTx').classList.toggle('active', mode === 'TX');
+      document.getElementById('btnRx').classList.toggle('active', mode === 'RX');
+      document.getElementById('txPanel').style.display = mode === 'TX' ? 'flex' : 'none';
+      document.getElementById('rxPanel').style.display = mode === 'RX' ? 'flex' : 'none';
+    }
+
+    function playOneSecondBuzzer() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'square'; 
+        oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); 
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 1.0); 
+      } catch (e) { }
+    }
+
+    function playAckBuzzer() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'square'; 
+        oscillator.frequency.setValueAtTime(1500, audioCtx.currentTime); 
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.3); 
+      } catch (e) { }
+    }
+
+    function playChatSound() {
+      chatSound.currentTime = 0;
+      chatSound.play().catch(e => console.log('รอแตะหน้าจอเพื่อเล่นเสียงแชท'));
+    }
+
+    async function joinChannel(pin) {
+      unlockAudioForiOS(); 
+
+      if (!pin || pin.length !== 4 || isNaN(pin)) {
+        alert("กรุณากรอกรหัส PIN เป็นตัวเลข 4 หลักให้ครบถ้วนครับ");
+        return;
+      }
+
+      await supabaseClient.removeAllChannels();
+
+      const roomName = 'buzzer-private-room-' + pin;
+      activeChannel = supabaseClient.channel(roomName);
+
+      activeChannel
+        .on('broadcast', { event: 'state_change' }, (payload) => {
+          const state = payload.payload.state;
+          
+          document.getElementById('ackLed').classList.remove('on');
+          document.getElementById('btnOk').classList.remove('ack-active');
+
+          if (currentMode === 'RX') {
+            document.getElementById('oledScreen').innerText = state === 'IDLE' ? 'Waiting...' : state;
+            if (state !== 'IDLE') playOneSecondBuzzer();
+          } 
+          else {
+            updateUI(state);
+          }
+        })
+        .on('broadcast', { event: 'chat_message' }, (payload) => {
+          appendMessage(payload.payload.text, 'other');
+          playChatSound(); 
+        })
+        .on('broadcast', { event: 'ack_received' }, (payload) => {
+          if (currentMode === 'TX') {
+            document.getElementById('ackLed').classList.add('on');
+            playAckBuzzer(); 
+          }
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('เชื่อมต่อห้อง ' + roomName + ' สำเร็จ!');
+          }
+        });
+
+      updateUI('IDLE', false);
+      document.getElementById('chatBox').innerHTML = ''; 
+      document.getElementById('oledScreen').innerText = 'Waiting...';
+      document.getElementById('ackLed').classList.remove('on');
+      document.getElementById('btnOk').classList.remove('ack-active');
+      appendMessage(`-- เข้าร่วมห้องรหัส: ${pin} --`, 'system');
+    }
+
+    function changeRoom() {
+      const pin = document.getElementById('roomPin').value;
+      joinChannel(pin);
+    }
+
+    function broadcastState(state) {
+      unlockAudioForiOS(); 
+      
+      document.getElementById('ackLed').classList.remove('on');
+
+      updateUI(state); 
+      activeChannel.send({
+        type: 'broadcast',
+        event: 'state_change',
+        payload: { state: state }
+      });
+    }
+
+    function sendAck() {
+      unlockAudioForiOS(); 
+      
+      if (!activeChannel) return;
+      
+      activeChannel.send({
+        type: 'broadcast',
+        event: 'ack_received',
+        payload: {}
+      });
+      
+      activeChannel.send({
+        type: 'broadcast',
+        event: 'chat_message',
+        payload: { text: "OK" }
+      });
+
+      appendMessage("OK", 'me');
+      document.getElementById('btnOk').classList.add('ack-active');
+    }
+
+    function updateUI(state, playSound = true) {
+      if (state !== 'IDLE' && playSound) {
+        playOneSecondBuzzer(); 
+      }
+      currentState = state;
+      const buttons = document.querySelectorAll('.btn-remote');
+      buttons.forEach(button => {
+        const buttonState = button.getAttribute('data-state');
+        if (buttonState === currentState) {
+          button.classList.remove('active');
+          void button.offsetWidth; 
+          button.classList.add('active'); 
+        } else {
+          button.classList.remove('active'); 
+        }
+      });
+    }
+
+    function sendChat() {
+      unlockAudioForiOS(); 
+
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return; 
+
+      activeChannel.send({
+        type: 'broadcast',
+        event: 'chat_message',
+        payload: { text: text }
+      });
+      appendMessage(text, 'me');
+      input.value = '';
+    }
+
+    function appendMessage(text, sender) {
+      const chatBox = document.getElementById('chatBox');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'chat-msg msg-' + sender;
+      msgDiv.innerText = text;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const defaultPin = '0000';
+      document.getElementById('roomPin').value = defaultPin;
+      joinChannel(defaultPin);
+
+      document.getElementById('chatInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendChat();
+      });
+
+      document.getElementById('roomPin').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') changeRoom();
+      });
+    });
+  </script>
+</body>
+</html>
